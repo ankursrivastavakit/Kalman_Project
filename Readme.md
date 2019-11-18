@@ -12,7 +12,7 @@
 
 ## Features in development with planned completion date:
 - Generate CSV file for KF positions at each time step (19.11.19)
-- Read this CSV file with Python and create a plot ( 19.11.19)
+- Read this CSV file with Python and create plots (trajectories with RMSE) ( 19.11.19)
 - Implement a least squares solver and compare EKF with LSQ (21.11.19)
 - Implement unscented Kalman filter and compare to EKF (23.11.19)
 
