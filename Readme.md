@@ -16,9 +16,9 @@
 - Read this CSV file with Python and create plots (trajectories with RMSE) ( 19.11.19)
 - Implement a least squares solver and compare EKF with LSQ (21.11.19)
 - Implement unscented Kalman filter and compare to EKF (23.11.19)
+- Integrate vehicle model and generate system input for reconstructing the orientation of a vehicle (30.11.19)
 
 ## Planned features:
-- Integrate vehicle model and generate system input for reconstructing the orientation of a vehicle (30.11.19)
 - Multiple targets that interact with each other for cooperative localization
 
 
