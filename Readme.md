@@ -8,7 +8,7 @@
 - The following parameters are editable: t (time step), measurement noise, max velocity of target and number of iterations
 - An extended Kalman filter (EKF) is used in this case
 - The user can input the starting X and Y positions in the console
-- The final positions are shown in the console as well as the ground truth values
+- The final positions are shown in the console as well as the Grouth Truth values
 
 ## Features in development with planned completion date:
 - Generate CSV file for KF positions at each time step (19.11.19)
@@ -24,3 +24,5 @@ References:
 1. https://eigen.tuxfamily.org/dox/index.html
 2. https://github.com/hmartiro/kalman-cpp 
 
+*The two documents present under literature are written by me. Please ask for permission before reusing them.*
+contact: ankursrivastava.ansr@gmail.com 
