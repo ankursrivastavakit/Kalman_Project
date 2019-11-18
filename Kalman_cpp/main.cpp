@@ -40,9 +40,9 @@ int main() {
 
 	// User input for starting x and y positions
 	double start_x, start_y;
-	cout << "Please enter a starting x value (double): " << endl;
+	cout << "Please enter a starting x value (double -50 to 50): " << endl;
 	cin >> start_x;
-	cout << "Please enter a starting y value (double):" << endl;
+	cout << "Please enter a starting y value (double -50 to 50):" << endl;
 	cin >> start_y;
 
 	//Storage for trajectory and for measurements
@@ -106,8 +106,8 @@ int main() {
 
 	//Console output. Comparing the final position to the ground truth value.
 	cout << "After " << iterations << " iterations:" << endl;
-	cout << "EKF X Pos: " << EKF_result(0) << " EKF Y Pos: " << EKF_result(1) << endl;
-	cout << "True X Pos: " << trajectory[iterations-1][0] << " True Y Pos: " << trajectory[iterations-1][1] << endl;
+	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1) << " m" << endl;
+	cout << "True X Pos: " << trajectory[iterations-1][0] << " m True Y Pos: " << trajectory[iterations-1][1] << " m" << endl;
 	system("pause");
 }
 
