@@ -2,6 +2,7 @@
 
 ## This filter is used to localize a target using distance measurements from four satellites. 
 
+![Screenshot of console](Screenshot_console.jpg?raw=true "Screenshot of console")
 ## Current features:
 - Create non-linear S-Shaped trajectory for target (Ground Truth)
 - Generate distance measurements (with or without noise) for the four satellites
@@ -19,6 +20,7 @@
 ## Planned features:
 - Integrate vehicle model and generate system input for reconstructing the orientation of a vehicle (30.11.19)
 - Multiple targets that interact with each other for cooperative localization
+
 
 References:
 1. https://eigen.tuxfamily.org/dox/index.html
