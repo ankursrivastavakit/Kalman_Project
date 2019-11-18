@@ -2,7 +2,7 @@
 
 ## This filter is used to localize a target using distance measurements from four satellites. 
 
-![Screenshot of console](Screenshot_console.jpg?raw=true "Screenshot of console")
+![Screenshot of console](https://i.imgur.com/VipKiis.png?raw=true "Screenshot of console")
 ## Current features:
 - Create non-linear S-Shaped trajectory for target (Ground Truth)
 - Generate distance measurements (with or without noise) for the four satellites
