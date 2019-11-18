@@ -1,8 +1,3 @@
-/*
-Author: Ankur Srivastava
-Kalman filter implementation for target tracking
-*/
-
 #include <Eigen/Dense>
 #include <iostream>
 #include <vector>
@@ -26,11 +21,11 @@ int main() {
 	double t = 0.1; // time step
 	double max_v = 5; // max velocity
 	bool noise = 1; // noise on/off
-	double sigw = 3.0; // White noise value for NCA model
+	double sigw = 3.0; // White noise acceleration value
 	int iterations = 200; // number of iterations
 	double sig_noise = 0.1; // sigma of measurement noise
 	int n = 6; //number of states
-	int m = 4; //number of measurements per time step
+	int m = 4; //number of sensors
 
 	// Positions of the four anchors/satellites (meters)
 	Vector2d A1(5, 5), A2(100, 5), A3(100, 100), A4(5
@@ -53,14 +48,13 @@ int main() {
 	create_trajectory(t, max_v, iterations, trajectory, start_x, start_y);
 	create_measurements(noise, sig_noise, trajectory, measurements, P);
 
-	MatrixXd A(n, n); //System matrix
-	MatrixXd C(n, n); //State covariance 
-	MatrixXd Q(n, n); // Process noise covariance
-	MatrixXd R(m,m); // Measurement noise covariance
-	MatrixXd B(n, 2); // Input (for calculating Q)
-	Vector4d z_hat(0,0,0,0); //Measurement vector
+	MatrixXd A(n, n);
+	MatrixXd C(n, n);
+	MatrixXd Q(n, n);
+	MatrixXd R(m,m);
+	MatrixXd B(n, 2);
+	Vector4d z_hat(0,0,0,0);
 
-	//For nearly constant accleration (NCA)
 	A << 1, 0, t, 0, pow(t,2)* 0.5, 0,
 		0, 1, 0, t, 0, pow(t, 2) * 0.5,
 		0, 0, 1, 0, t, 0,
@@ -77,41 +71,31 @@ int main() {
 
 	R = MatrixXd::Identity(m, m) * sig_noise;
 
-	// A sensible initial covariance
 	C << 10, 0, 0, 0, 0, 0,
 		0, 10, 0, 0, 0, 0,
 		0, 0, 5, 0, 0, 0,
 		0, 0, 0, 5, 0, 0,
 		0, 0, 0, 0, 3, 0,
 		0, 0, 0, 0, 0, 3;
-
-	// Calculating the NCA model value
 	Q = B * sigw * B.transpose();
-
-	//Initializing the EKF
+	system("pause");
     extended_kf kf(A, C, R, Q, P);
 	kf.init();
-	
-	//Feeding measurements into the EKF
 	for (int i = 0; i < iterations; i++) {
 		for (int j = 0; j < 4; j++) {
 			z_hat(j) = measurements[i][j];
 		}
 		kf.update(z_hat);
+		
 	}
-
-	//Reading the final position from the EKF
 	VectorXd EKF_result;
 	EKF_result = kf.state();
 
-	//Console output. Comparing the final position to the ground truth value.
 	cout << "After " << iterations << " iterations:" << endl;
 	cout << "EKF X Pos: " << EKF_result(0) << " EKF Y Pos: " << EKF_result(1) << endl;
 	cout << "True X Pos: " << trajectory[iterations-1][0] << " True Y Pos: " << trajectory[iterations-1][1] << endl;
 	system("pause");
 }
-
-
 
 /* Function to create a normal S-shaped trajectory. Can be expanded in the future
 	for various modes (constant speed, constant acceleration, non-constant acceleration)
