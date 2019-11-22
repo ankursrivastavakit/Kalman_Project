@@ -11,12 +11,12 @@
 - The user can input the starting X and Y positions in the console
 - The final positions are shown in the console as well as the Grouth Truth values
 
-## Features in development with planned completion date:
-- Generate CSV file for KF positions at each time step (20.11.19)
-- Read this CSV file with Python and create plots (trajectories with RMSE) ( 20.11.19)
-- Implement a least squares solver and compare EKF with LSQ (21.11.19)
-- Implement unscented Kalman filter and compare to EKF (23.11.19)
-- Integrate vehicle model and generate system input for reconstructing the orientation of a vehicle (30.11.19)
+## Features in development:
+- Generate CSV file for KF positions at each time step 
+- Read this CSV file with Python and create plots (trajectories with RMSE) 
+- Implement a least squares solver and compare EKF with LSQ 
+- Implement unscented Kalman filter and compare to EKF 
+- Integrate vehicle model and generate system input for reconstructing the orientation of a vehicle 
 
 ## Planned features:
 - Multiple targets that interact with each other for cooperative localization
