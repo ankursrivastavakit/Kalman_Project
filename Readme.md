@@ -1,6 +1,6 @@
 # Kalman filter Implementation in C++ using Eigen. 
 
-## This filter is used to localize a target using distance measurements from four satellites. 
+## This filter is used to localize a target using distance measurements from four satellites (modelled on UWB). 
 
 ![Screenshot of console](https://i.imgur.com/VipKiis.png?1raw=true "Screenshot of console")
 ## Current features:
