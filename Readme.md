@@ -24,7 +24,8 @@
 
 References:
 1. https://eigen.tuxfamily.org/dox/index.html
-2. https://github.com/hmartiro/kalman-cpp 
+2. https://github.com/hmartiro/kalman-cpp
+3. https://pythonprogramming.net/loading-file-data-matplotlib-tutorial/
 
 *The two documents present under literature are written by me. Please ask for permission before reusing them.*
 contact: ankursrivastava.ansr@gmail.com 
