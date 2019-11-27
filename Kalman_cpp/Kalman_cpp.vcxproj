@@ -117,10 +117,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="extended_kf.cpp" />
+    <ClCompile Include="kf_save.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="unscented_kf.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extended_kf.h" />
+    <ClInclude Include="kf_save.h" />
+    <ClInclude Include="unscented_kf.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

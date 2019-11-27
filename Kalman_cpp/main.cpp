@@ -9,6 +9,7 @@ Kalman filter implementation for target tracking
 #include <random>
 #include <cmath>
 #include "extended_kf.h"
+#include <Eigen/Stdvector>
 
 
 using namespace Eigen;
@@ -17,8 +18,6 @@ using namespace std;
 //Function Declarations
 void create_trajectory(double& t, double& max_v, int& iterations, vector<vector<double>>& result, double& start_x, double& start_y);
 void create_measurements(bool& noise, double& sig_noise, vector<vector<double>>& trajectory, vector<vector<double>>& result, const MatrixXd& P);
-
-
 
 int main() {
 
@@ -75,7 +74,7 @@ int main() {
 		1, 0,
 		0, 1;
 
-	R = MatrixXd::Identity(m, m) * sig_noise;
+	R = MatrixXd::Identity(m, m) * pow(sig_noise,2);
 
 	// A sensible initial covariance
 	C << 10, 0, 0, 0, 0, 0,
@@ -86,12 +85,12 @@ int main() {
 		0, 0, 0, 0, 0, 3;
 
 	// Calculating the NCA model value
-	Q = B * sigw * B.transpose();
+	Q = B * pow(sigw,2) * B.transpose();
 
 	//Initializing the EKF
     extended_kf kf(A, C, R, Q, P);
 	kf.init();
-	
+	VectorXd EKF_result;
 	//Feeding measurements into the EKF
 	for (int i = 0; i < iterations; i++) {
 		for (int j = 0; j < 4; j++) {
@@ -101,12 +100,12 @@ int main() {
 	}
 
 	//Reading the final position from the EKF
-	VectorXd EKF_result;
+	
 	EKF_result = kf.state();
 
 	//Console output. Comparing the final position to the ground truth value.
 	cout << "After " << iterations << " iterations:" << endl;
-	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1) << " m" << endl;
+	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1)<< " m" << endl;
 	cout << "True X Pos: " << trajectory[iterations-1][0] << " m True Y Pos: " << trajectory[iterations-1][1] << " m" << endl;
 	system("pause");
 }

@@ -21,9 +21,21 @@
     <ClCompile Include="extended_kf.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="unscented_kf.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="kf_save.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extended_kf.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="unscented_kf.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="kf_save.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
