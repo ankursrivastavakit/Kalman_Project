@@ -13,10 +13,11 @@
 - The user can input the starting X and Y positions in the console
 - The final positions are shown in the console as well as the Grouth Truth values
 - Generate CSV file for KF positions at each time step 
-- Read this CSV file with Python and create plots (trajectories with RMSE) 
+- Read this CSV file with Python and create plots
 
 ## Features in development:
-- Implement a least squares solver and compare EKF with LSQ 
+- Implement a least squares solver and compare EKF with LSQ
+- Calculate RMSE for the filters and an additional plot
 - Implement unscented Kalman filter and compare to EKF 
 - Integrate vehicle model and generate system input for reconstructing the orientation of a vehicle 
 
