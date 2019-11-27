@@ -10,6 +10,7 @@ Kalman filter implementation for target tracking
 #include <cmath>
 #include "extended_kf.h"
 #include <Eigen/Stdvector>
+#include "kf_save.h"
 
 
 using namespace Eigen;
@@ -91,17 +92,22 @@ int main() {
     extended_kf kf(A, C, R, Q, P);
 	kf.init();
 	VectorXd EKF_result;
+	kf_save ekf_result("ekf_result.csv");
+	ekf_result.open();
 	//Feeding measurements into the EKF
 	for (int i = 0; i < iterations; i++) {
 		for (int j = 0; j < 4; j++) {
 			z_hat(j) = measurements[i][j];
 		}
 		kf.update(z_hat);
+		ekf_result.write(kf.state());
 	}
-
+	ekf_result.close();
 	//Reading the final position from the EKF
 	
 	EKF_result = kf.state();
+
+	
 
 	//Console output. Comparing the final position to the ground truth value.
 	cout << "After " << iterations << " iterations:" << endl;

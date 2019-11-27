@@ -8,3 +8,19 @@ kf_save::kf_save(
 ) {
 	filename = s_in;
 }
+
+void kf_save::open() {
+	myfile.open(filename);
+}
+
+void kf_save::close() {
+	myfile.close();
+}
+
+void kf_save::write(const Eigen::VectorXd& state){
+	string x = to_string(state(0));
+	string y = to_string(state(1));
+
+	myfile << x << "," << y << "\n";
+
+}
