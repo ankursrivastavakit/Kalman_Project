@@ -28,7 +28,7 @@ int main() {
 	bool noise = 1; // noise on/off
 	double sigw = 3.0; // White noise value for NCA model
 	int iterations = 200; // number of iterations
-	double sig_noise = 0.1; // sigma of measurement noise
+	double sig_noise = 0.5; // sigma of measurement noise
 	int n = 6; //number of states
 	int m = 4; //number of measurements per time step
 
@@ -59,6 +59,11 @@ int main() {
 	MatrixXd R(m,m); // Measurement noise covariance
 	MatrixXd B(n, 2); // Input (for calculating Q)
 	Vector4d z_hat(0,0,0,0); //Measurement vector
+
+	VectorXd EKF_result;
+	Vector2d gt_buffer(0, 0);
+	kf_save ekf_result("ekf_result.csv");
+	kf_save gt("ground_truth.csv");
 
 	//For nearly constant accleration (NCA)
 	A << 1, 0, t, 0, pow(t,2)* 0.5, 0,
@@ -91,18 +96,28 @@ int main() {
 	//Initializing the EKF
     extended_kf kf(A, C, R, Q, P);
 	kf.init();
-	VectorXd EKF_result;
-	kf_save ekf_result("ekf_result.csv");
+
 	ekf_result.open();
+	gt.open();
+
 	//Feeding measurements into the EKF
 	for (int i = 0; i < iterations; i++) {
 		for (int j = 0; j < 4; j++) {
 			z_hat(j) = measurements[i][j];
 		}
+
+		
 		kf.update(z_hat);
 		ekf_result.write(kf.state());
+
+		gt_buffer(0) = trajectory[i][0];
+		gt_buffer(1) = trajectory[i][1];
+		gt.write(gt_buffer);
+
+
 	}
 	ekf_result.close();
+	gt.close();
 	//Reading the final position from the EKF
 	
 	EKF_result = kf.state();
@@ -138,7 +153,7 @@ void create_trajectory(double& t, double& max_v, int& iterations, vector<vector<
 	for (int i = iterations / 2; i < iterations; i++) {
 
 		result[i][0] = result[i - 1][0] + max_v * t;
-		result[i][1] = result[i - 1][1] + max_v * t * (1.0 - (i / iterations));
+		result[i][1] = result[i - 1][1] + max_v * t * (1.0 - ((i*1.0) / (1.0*iterations)));
 	}
 }
 
