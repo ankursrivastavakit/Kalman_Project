@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import csv
 
+#for appending kalman filter and ground truth values
 ekf_x = []
 ekf_y = []
 
