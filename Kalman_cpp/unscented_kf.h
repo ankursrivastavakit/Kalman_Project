@@ -13,7 +13,7 @@ class unscented_kf
 		);
 
 
-/*void init();
+void init();
 
 void update(const VectorXd& z);
 
@@ -22,16 +22,16 @@ VectorXd state() {
 };
 
 MatrixXd covariance() {
-
+	return C;
 };
-*/
+
 private:
 
 //state vectors
 VectorXd x_est, x_pred;
 
 //Measurement vector
-VectorXd z_hat;
+VectorXd z_hat, z_pred;
 //Matrices
 MatrixXd A, Q, C, R, P;
 

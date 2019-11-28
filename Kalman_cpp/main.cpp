@@ -60,10 +60,10 @@ int main() {
 	MatrixXd B(n, 2); // Input (for calculating Q)
 	Vector4d z_hat(0,0,0,0); //Measurement vector
 
-	VectorXd EKF_result;
-	Vector2d gt_buffer(0, 0);
-	kf_save ekf_result("ekf_result.csv");
-	kf_save gt("ground_truth.csv");
+	VectorXd EKF_result; //for printing to console
+	Vector2d gt_buffer(0, 0); // Ground truth buffer
+	kf_save ekf_result("ekf_result.csv"); //creating file for saving ekf results
+	kf_save gt("ground_truth.csv"); // creating file for saving ground truth
 
 	//For nearly constant accleration (NCA)
 	A << 1, 0, t, 0, pow(t,2)* 0.5, 0,
