@@ -1,6 +1,6 @@
 /*
 Author: Ankur Srivastava
-Kalman filter implementation for target tracking
+Kalman filter implementation for target tracking with four ground satellites
 */
 
 #include <Eigen/Dense>
@@ -96,8 +96,8 @@ int main() {
 	Q = B * pow(sigw,2) * B.transpose();
 
 	//Initializing the EKF
-    extended_kf kf(A, C, R, Q, P);
-	kf.init();
+    extended_kf ekf(A, C, R, Q, P);
+	ekf.init();
 
 	//Initializing the UKF
 
@@ -114,25 +114,26 @@ int main() {
 			z_hat(j) = measurements[i][j];
 		}
 
-		
-		kf.update(z_hat);
-		ekf_result.write(kf.state());
-
+		//update the Kalman Filter states
+		ekf.update(z_hat);
 		ukf.update(z_hat);
-		ukf_result.write(ukf.state());
 
+		//write the values
+		ekf_result.write(ekf.state());
+		ukf_result.write(ukf.state());
 		gt_buffer(0) = trajectory[i][0];
 		gt_buffer(1) = trajectory[i][1];
 		gt.write(gt_buffer);
 
 
 	}
+	//Close the files
 	ekf_result.close();
 	ukf_result.close();
 	gt.close();
 	//Reading the final position from the EKF
 	
-	EKF_result = kf.state();
+	EKF_result = ekf.state();
 
 	
 

@@ -29,7 +29,6 @@ void unscented_kf::init() {
 	x_est.setZero();
 
 	//setting scaling parameters for the sigma points
-
 	alpha = 0.001;
 	beta = 2.0;
 	kappa = 0.0;
@@ -46,18 +45,22 @@ void unscented_kf::update(const VectorXd& z) {
 
 	//Creating 2n+1 sigma points
 
+	
 	MatrixXd plus_sigma = x_est* MatrixXd::Ones(1, n) + scaling_matrix;
 	MatrixXd minus_sigma = x_est * MatrixXd::Ones(1, n) - scaling_matrix;
-
+	xi.resize(n, 2 * n + 1);
 	xi << x_est, plus_sigma, minus_sigma;
-	MatrixXd xi_p(n, 2 * n + 1);
-	MatrixXd zeta_p(n, 2 * n + 1);
-	VectorXd w_m_end = 0.5 / c * VectorXd::Ones(2 * n);
 	
-	VectorXd w_m (lambda/c, w_m_end);
+	MatrixXd xi_p(n, 2 * n + 1);
+	zeta_p.resize(4, 2 * n + 1);
+	
+	VectorXd w_m = 0.5 / c * VectorXd::Ones(2 * n + 1);
+	w_m(0) = lambda / c;
+	
 	VectorXd w_c = w_m;
 	w_c(0) = w_m(0) + (1 - pow(alpha, 2) + beta);
 
+	
 	// Prediction
 
 	// Predicting the sigma points
@@ -73,65 +76,67 @@ void unscented_kf::update(const VectorXd& z) {
 		x_pred = w_m(i) * xi_p.block(0, i, n, 1) + x_pred;
 
 	}
-
 	
+	Cov_sigma.resize(n);
 	//Using the weights and predicted state to calculate the covariance
 	for (int i = 0; i < 2 * n + 1; i++) {
 		Cov_sigma = (xi_p.block(0, i, n, 1) - x_pred);
 		C += w_c(i) * (Cov_sigma * Cov_sigma.transpose());
 		
 	}
+	
 
 	//Nearly Constant Acceleration Model
 
 	C += Q;
 
 	//Calculate zeta_p (zeta_k|k-1)
-
+	
 	for (int i = 0; i < 2 * n + 1; i++) {
 		for (int j = 0; j < 4; j++) {
-			zeta_p(j, i) = sqrt(pow(xi_p(1, i) - P(1, j), 2) + pow(xi_p(2, i) - P(2, j), 2));
+			zeta_p(j, i) = sqrt(pow(xi_p(0, i) - P(0, j), 2) + pow(xi_p(1, i) - P(1, j), 2));
 		}
 	}
-
-
+	
+	
+	// Resizing and initializing the cross-covariance matrices
 	C_xk_zk.resize(n, 4);
 	C_zk.resize(4, 4);
 	C_xk_zk.setZero();
 	C_zk.setZero();
 	intsum_z_pred.resize(4, 2 * n + 1);
-
+	
+	//Intermediate summand of the predicted measurement
 	for (int i = 0; i < 2 * n + 1; i++) {
-		intsum_z_pred.block(0, i, 1, 4) = w_m(i) * zeta_p.block(0, i, 4, 1);
+		intsum_z_pred.block(0, i, 4, 1) = w_m(i) * zeta_p.block(0, i, 4, 1);
 	}
 
+	//Calculating the predicted measurement
 	z_pred.setZero();
 	for (int i = 0; i < 2 * n + 1; i++) {
 		z_pred += intsum_z_pred.block(0, i, 4, 1);
 	}
 	
+	/*Calculating the correlation of the predicted measurements (C_zk)
+	and the cross-correlation between the predicted state and measurements (C_xk_zk)
+	*/
 	for (int i = 0; i < 2 * n + 1; i++) {
 		C_xk_zk_sigma = w_c(i) * (xi_p.block(0, i, n, 1)-x_pred);
 		C_zk_sigma = (zeta_p.block(0, i, 4, 1) - z_pred);
 
-		C_xk_zk += w_c(i) * C_xk_zk_sigma * C_xk_zk_sigma.transpose();
+		C_xk_zk += w_c(i) * C_xk_zk_sigma * C_zk_sigma.transpose();
 		C_zk += w_c(i) * C_zk_sigma * C_zk_sigma.transpose();
 	}
-
+	
 	C_zk += R;
 
+	//Kalman Gain
 	K = C_xk_zk * C_zk.inverse();
 
+	//Estimation of state and covariance
 	x_est = x_pred + K*(z - z_pred);
-	C = C_xk_zk * C_zk.inverse();
-
-	/*
-
-
-
-	*/
-
-	//Generate sigma points
+	C = C-K*C_zk *K.transpose();
+	
 
 
 }
