@@ -9,8 +9,10 @@ Kalman filter implementation for target tracking
 #include <random>
 #include <cmath>
 #include "extended_kf.h"
+#include "unscented_kf.h"
 #include <Eigen/Stdvector>
 #include "kf_save.h"
+
 
 
 using namespace Eigen;
@@ -64,7 +66,7 @@ int main() {
 	Vector2d gt_buffer(0, 0); // Ground truth buffer
 	kf_save ekf_result("ekf_result.csv"); //creating file for saving ekf results
 	kf_save gt("ground_truth.csv"); // creating file for saving ground truth
-
+	kf_save ukf_result("ukf_result.csv"); // creating file for saving ukf results
 	//For nearly constant accleration (NCA)
 	A << 1, 0, t, 0, pow(t,2)* 0.5, 0,
 		0, 1, 0, t, 0, pow(t, 2) * 0.5,
@@ -97,7 +99,13 @@ int main() {
     extended_kf kf(A, C, R, Q, P);
 	kf.init();
 
+	//Initializing the UKF
+
+	unscented_kf ukf(A, C, R, Q, P);
+	ukf.init();
+
 	ekf_result.open();
+	ukf_result.open();
 	gt.open();
 
 	//Feeding measurements into the EKF
@@ -110,6 +118,9 @@ int main() {
 		kf.update(z_hat);
 		ekf_result.write(kf.state());
 
+		ukf.update(z_hat);
+		ukf_result.write(ukf.state());
+
 		gt_buffer(0) = trajectory[i][0];
 		gt_buffer(1) = trajectory[i][1];
 		gt.write(gt_buffer);
@@ -117,6 +128,7 @@ int main() {
 
 	}
 	ekf_result.close();
+	ukf_result.close();
 	gt.close();
 	//Reading the final position from the EKF
 	

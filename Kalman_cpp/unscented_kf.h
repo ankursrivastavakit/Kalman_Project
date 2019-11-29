@@ -33,9 +33,15 @@ VectorXd x_est, x_pred;
 //Measurement vector
 VectorXd z_hat, z_pred;
 //Matrices
-MatrixXd A, Q, C, R, P;
+MatrixXd A, Q, C, R, P, Lower, scaling_matrix, xi, K;
 
+//Intermediate Matrices for UKF
+
+MatrixXd C_xk_zk, C_zk, intsum_z_pred;
+VectorXd Cov_sigma, C_xk_zk_sigma, C_zk_sigma;
 //parameters
 int m, n;
+
+double alpha, beta, kappa, lambda, c;
 
 };
