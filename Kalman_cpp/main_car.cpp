@@ -1,6 +1,8 @@
 /*
 Author: Ankur Srivastava
-Kalman filter implementation for target tracking with four ground satellites
+Kalman filter implementation for car tracking with four ground satellites.
+The car's position, velocity and orientation are tracked with distance information
+as well as the steer angle and 
 */
 
 #include <Eigen/Dense>
@@ -29,7 +31,7 @@ int main() {
 	double max_v = 5; // max velocity
 	bool noise = 1; // noise on/off
 	double sigw = 3.0; // White noise value for NCA model
-	int iterations = 100; // number of iterations
+	int iterations = 4; // number of iterations
 	double sig_noise = 0.5; // sigma of measurement noise
 	int n = 6; //number of states
 	int m = 4; //number of measurements per time step
@@ -37,7 +39,7 @@ int main() {
 	// Positions of the four anchors/satellites (meters)
 	Vector2d A1(5, 5), A2(100, 5), A3(100, 100), A4(5
 		, 100);
-	MatrixXd P(2,4);
+	MatrixXd P(2, 4);
 	P << A1, A2, A3, A4;
 
 	// User input for starting x and y positions
@@ -48,7 +50,7 @@ int main() {
 	cin >> start_y;
 
 	//Storage for trajectory and for measurements
-	vector<vector<double>> trajectory(iterations, vector<double> (2));
+	vector<vector<double>> trajectory(iterations, vector<double>(2));
 	vector<vector<double>> measurements(iterations, vector<double>(4));
 
 	//Generating trajectory and measurement from the satellites
@@ -58,9 +60,9 @@ int main() {
 	MatrixXd A(n, n); //System matrix
 	MatrixXd C(n, n); //State covariance 
 	MatrixXd Q(n, n); // Process noise covariance
-	MatrixXd R(m,m); // Measurement noise covariance
+	MatrixXd R(m, m); // Measurement noise covariance
 	MatrixXd B(n, 2); // Input (for calculating Q)
-	Vector4d z_hat(0,0,0,0); //Measurement vector
+	Vector4d z_hat(0, 0, 0, 0); //Measurement vector
 
 	VectorXd EKF_result; //for printing to console
 	Vector2d gt_buffer(0, 0); // Ground truth buffer
@@ -68,7 +70,7 @@ int main() {
 	kf_save gt("ground_truth.csv"); // creating file for saving ground truth
 	kf_save ukf_result("ukf_result.csv"); // creating file for saving ukf results
 	//For nearly constant accleration (NCA)
-	A << 1, 0, t, 0, pow(t,2)* 0.5, 0,
+	A << 1, 0, t, 0, pow(t, 2) * 0.5, 0,
 		0, 1, 0, t, 0, pow(t, 2) * 0.5,
 		0, 0, 1, 0, t, 0,
 		0, 0, 0, 1, 0, t,
@@ -82,7 +84,7 @@ int main() {
 		1, 0,
 		0, 1;
 
-	R = MatrixXd::Identity(m, m) * pow(sig_noise,2);
+	R = MatrixXd::Identity(m, m) * pow(sig_noise, 2);
 
 	// A sensible initial covariance
 	C << 10, 0, 0, 0, 0, 0,
@@ -93,10 +95,10 @@ int main() {
 		0, 0, 0, 0, 0, 3;
 
 	// Calculating the NCA model value
-	Q = B * pow(sigw,2) * B.transpose();
+	Q = B * pow(sigw, 2) * B.transpose();
 
 	//Initializing the EKF
-    extended_kf ekf(A, C, R, Q, P);
+	extended_kf ekf(A, C, R, Q, P);
 	ekf.init();
 
 	//Initializing the UKF
@@ -132,15 +134,15 @@ int main() {
 	ukf_result.close();
 	gt.close();
 	//Reading the final position from the EKF
-	
+
 	EKF_result = ekf.state();
 
-	
+
 
 	//Console output. Comparing the final position to the ground truth value.
 	cout << "After " << iterations << " iterations:" << endl;
-	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1)<< " m" << endl;
-	cout << "True X Pos: " << trajectory[iterations-1][0] << " m True Y Pos: " << trajectory[iterations-1][1] << " m" << endl;
+	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1) << " m" << endl;
+	cout << "True X Pos: " << trajectory[iterations - 1][0] << " m True Y Pos: " << trajectory[iterations - 1][1] << " m" << endl;
 	system("pause");
 }
 
@@ -166,7 +168,7 @@ void create_trajectory(double& t, double& max_v, int& iterations, vector<vector<
 	for (int i = iterations / 2; i < iterations; i++) {
 
 		result[i][0] = result[i - 1][0] + max_v * t;
-		result[i][1] = result[i - 1][1] + max_v * t * (1.0 - ((i*1.0) / (1.0*iterations)));
+		result[i][1] = result[i - 1][1] + max_v * t * (1.0 - ((i * 1.0) / (1.0 * iterations)));
 	}
 }
 

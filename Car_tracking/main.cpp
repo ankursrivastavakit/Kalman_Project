@@ -1,24 +1,25 @@
 /*
 Author: Ankur Srivastava
-Kalman filter implementation for target tracking with four ground satellites
+Kalman filter implementation for Vehicle target tracking with four ground satellites
 */
 
+#define _USE_MATH_DEFINES
 #include <Eigen/Dense>
 #include <iostream>
 #include <vector>
 #include <random>
 #include <cmath>
-#include "extended_kf.h"
-#include "unscented_kf.h"
-#include <Eigen/Stdvector>
-#include "kf_save.h"
 
+#include "ekf_car.h"
+#include <Eigen/Stdvector>
+//#include "kf_save_car.h"
 
 
 using namespace Eigen;
 using namespace std;
 
 //Function Declarations
+void create_input(double& t, double& max_v, int& iterations, double car_noise[2], vector<vector<double>>& result);
 void create_trajectory(double& t, double& max_v, int& iterations, vector<vector<double>>& result, double& start_x, double& start_y);
 void create_measurements(bool& noise, double& sig_noise, vector<vector<double>>& trajectory, vector<vector<double>>& result, const MatrixXd& P);
 
@@ -28,16 +29,16 @@ int main() {
 	double t = 0.1; // time step
 	double max_v = 5; // max velocity
 	bool noise = 1; // noise on/off
-	double sigw = 3.0; // White noise value for NCA model
+	double car_noise[2] = { 0.5, 0.02 }; // acceleration input noise and steer angle input noise 
 	int iterations = 100; // number of iterations
 	double sig_noise = 0.5; // sigma of measurement noise
-	int n = 6; //number of states
-	int m = 4; //number of measurements per time step
+	int n = 4; // number of states
+	int m = 4; // number of measurements per time step
 
 	// Positions of the four anchors/satellites (meters)
 	Vector2d A1(5, 5), A2(100, 5), A3(100, 100), A4(5
 		, 100);
-	MatrixXd P(2,4);
+	MatrixXd P(2, 4);
 	P << A1, A2, A3, A4;
 
 	// User input for starting x and y positions
@@ -48,107 +49,113 @@ int main() {
 	cin >> start_y;
 
 	//Storage for trajectory and for measurements
-	vector<vector<double>> trajectory(iterations, vector<double> (2));
+	vector<vector<double>> trajectory(iterations, vector<double>(2));
 	vector<vector<double>> measurements(iterations, vector<double>(4));
+	vector<vector<double>> car_input(iterations, vector<double>(2));
+
 
 	//Generating trajectory and measurement from the satellites
+	create_input(t, max_v, iterations, car_noise, car_input);
 	create_trajectory(t, max_v, iterations, trajectory, start_x, start_y);
 	create_measurements(noise, sig_noise, trajectory, measurements, P);
 
-	MatrixXd A(n, n); //System matrix
 	MatrixXd C(n, n); //State covariance 
-	MatrixXd Q(n, n); // Process noise covariance
-	MatrixXd R(m,m); // Measurement noise covariance
-	MatrixXd B(n, 2); // Input (for calculating Q)
-	Vector4d z_hat(0,0,0,0); //Measurement vector
+	MatrixXd R(m, m); // Measurement noise covariance
+	Vector4d z_hat(0, 0, 0, 0); //Measurement vector
+	Vector2d u_hat(0, 0); // input vector
 
 	VectorXd EKF_result; //for printing to console
 	Vector2d gt_buffer(0, 0); // Ground truth buffer
-	kf_save ekf_result("ekf_result.csv"); //creating file for saving ekf results
-	kf_save gt("ground_truth.csv"); // creating file for saving ground truth
-	kf_save ukf_result("ukf_result.csv"); // creating file for saving ukf results
-	//For nearly constant accleration (NCA)
-	A << 1, 0, t, 0, pow(t,2)* 0.5, 0,
-		0, 1, 0, t, 0, pow(t, 2) * 0.5,
-		0, 0, 1, 0, t, 0,
-		0, 0, 0, 1, 0, t,
-		0, 0, 0, 0, 1, 0,
-		0, 0, 0, 0, 0, 1;
+    //kf_save_car ekf_result("ekf_result_car.csv"); //creating file for saving ekf results
+	//kf_save_car gt("ground_truth_car.csv"); // creating file for saving ground truth
 
-	B << pow(t, 2) * 0.5, 0,
-		0, pow(t, 2) * 0.5,
-		t, 0,
-		0, t,
-		1, 0,
-		0, 1;
-
-	R = MatrixXd::Identity(m, m) * pow(sig_noise,2);
+	R = MatrixXd::Identity(m, m) * pow(sig_noise, 2);
 
 	// A sensible initial covariance
-	C << 10, 0, 0, 0, 0, 0,
-		0, 10, 0, 0, 0, 0,
-		0, 0, 5, 0, 0, 0,
-		0, 0, 0, 5, 0, 0,
-		0, 0, 0, 0, 3, 0,
-		0, 0, 0, 0, 0, 3;
+	C << 10, 0, 0, 0, 
+		 0, 10, 0, 0,
+		 0, 0,  7, 0,
+		 0, 0,  0, 5;
 
 	// Calculating the NCA model value
-	Q = B * pow(sigw,2) * B.transpose();
+	Vector2d car_noise_sigma(pow(car_noise[0],2), pow(car_noise[1],2));
+	// Process noise covariance
+	MatrixXd Q(2, 2);
+	Q << pow(car_noise[0], 2), 0, 0, pow(car_noise[1], 2);
 
 	//Initializing the EKF
-    extended_kf ekf(A, C, R, Q, P);
+	ekf_car ekf(C, R, Q, P);
 	ekf.init();
 
-	//Initializing the UKF
-
-	unscented_kf ukf(A, C, R, Q, P);
-	ukf.init();
-
-	ekf_result.open();
-	ukf_result.open();
-	gt.open();
+	//ekf_result.open();
+	//gt.open();
 
 	//Feeding measurements into the EKF
 	for (int i = 0; i < iterations; i++) {
 		for (int j = 0; j < 4; j++) {
 			z_hat(j) = measurements[i][j];
 		}
+		for (int j = 0; j < 2; j++) {
+			u_hat(j) = car_input[i][j];
+		}
 
 		//update the Kalman Filter states
-		ekf.update(z_hat);
-		ukf.update(z_hat);
+		ekf.update(u_hat, z_hat);
 
 		//write the values
-		ekf_result.write(ekf.state());
-		ukf_result.write(ukf.state());
-		gt_buffer(0) = trajectory[i][0];
-		gt_buffer(1) = trajectory[i][1];
-		gt.write(gt_buffer);
+		//ekf_result.write(ekf.state());
+		//gt_buffer(0) = trajectory[i][0];
+		//gt_buffer(1) = trajectory[i][1];
+		//gt.write(gt_buffer);
 
 
 	}
 	//Close the files
-	ekf_result.close();
-	ukf_result.close();
-	gt.close();
+	//ekf_result.close();
+	//gt.close();
 	//Reading the final position from the EKF
-	
+
 	EKF_result = ekf.state();
 
-	
+
 
 	//Console output. Comparing the final position to the ground truth value.
 	cout << "After " << iterations << " iterations:" << endl;
-	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1)<< " m" << endl;
-	cout << "True X Pos: " << trajectory[iterations-1][0] << " m True Y Pos: " << trajectory[iterations-1][1] << " m" << endl;
+	cout << "EKF X Pos: " << EKF_result(0) << " m EKF Y Pos: " << EKF_result(1) << " m" << endl;
+	cout << "True X Pos: " << trajectory[iterations - 1][0] << " m True Y Pos: " << trajectory[iterations - 1][1] << " m" << endl;
 	system("pause");
 }
 
 
 
-/* Function to create a normal S-shaped trajectory. Can be expanded in the future
+/* Function to create system inputs of the car for a roughly S-shaped trajectory
 	for various modes (constant speed, constant acceleration, non-constant acceleration)
+
 	*/
+
+void create_input(double& t, double& max_v, int& iterations, double car_noise[2], vector<vector<double>>& result) {
+	double v_current = 0.0; //current velocity
+	default_random_engine generator;
+
+	//For loop for defining the first bend of the S-shaped trajectory
+	for (int i = 0; i < iterations; i++) {
+		
+		cout << i << endl;
+		if (v_current < max_v) {
+			v_current += 0.1;
+			result[i][0] = 0.1 / t;
+		}
+		
+		else { result[i][0] = 0; }
+
+		cout << result[i][0] << endl;
+		if (i < iterations / 2) {
+			result[i][1] = 5.0* M_PI / 180;
+		}
+		else { result[i][1] = -5.0* M_PI / 180; }
+	}
+}
+
 void create_trajectory(double& t, double& max_v, int& iterations, vector<vector<double>>& result, double& start_x, double& start_y) {
 
 	// Trajectory for the initial time step
@@ -166,7 +173,7 @@ void create_trajectory(double& t, double& max_v, int& iterations, vector<vector<
 	for (int i = iterations / 2; i < iterations; i++) {
 
 		result[i][0] = result[i - 1][0] + max_v * t;
-		result[i][1] = result[i - 1][1] + max_v * t * (1.0 - ((i*1.0) / (1.0*iterations)));
+		result[i][1] = result[i - 1][1] + max_v * t * (1.0 - ((i * 1.0) / (1.0 * iterations)));
 	}
 }
 
@@ -189,4 +196,9 @@ void create_measurements(bool& noise, double& sig_noise, vector<vector<double>>&
 			}
 		}
 	}
+}
+
+double deg2rad(double deg) {
+	double rad = deg * M_PI / 180;
+	return rad;
 }

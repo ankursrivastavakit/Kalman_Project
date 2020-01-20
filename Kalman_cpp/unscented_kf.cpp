@@ -32,16 +32,17 @@ void unscented_kf::init() {
 	alpha = 0.001;
 	beta = 2.0;
 	kappa = 0.0;
-	lambda = pow(alpha, 2) * (n + kappa) - n;
+	lambda = pow(alpha, 2) * (n*1.0 + kappa) - n*1.0;
 	c = n + lambda;
 }
 
 void unscented_kf::update(const VectorXd& z) {
 
 	//Cholesky decomposition
-
-	Lower = Cholesky_Decomposition(C, n);
-	scaling_matrix = sqrt(n + lambda) * Lower;
+	//cout << C;
+	Lower = C.llt().matrixL();
+	//cout << Lower;
+	scaling_matrix = sqrt(n*1.0 + lambda) * Lower;
 
 	//Creating 2n+1 sigma points
 
@@ -59,7 +60,7 @@ void unscented_kf::update(const VectorXd& z) {
 	
 	VectorXd w_c = w_m;
 	w_c(0) = w_m(0) + (1 - pow(alpha, 2) + beta);
-
+	//cout << w_m << w_c;
 	
 	// Prediction
 

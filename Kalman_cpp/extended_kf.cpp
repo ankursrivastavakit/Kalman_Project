@@ -9,7 +9,7 @@ extended_kf::extended_kf(
 	const MatrixXd& R_in, //Measurement Covariance
 	const MatrixXd& Q_in, //Process Noise Covariance
 	const MatrixXd& P_in) //Anchor Positions
- {
+  {
 	A = A_in;
 	R = R_in;
 	Q = Q_in;
