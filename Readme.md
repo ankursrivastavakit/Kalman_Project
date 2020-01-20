@@ -31,6 +31,7 @@ References:
 3. https://github.com/hmartiro/kalman-cpp
 4. https://pythonprogramming.net/loading-file-data-matplotlib-tutorial/
 5. https://www.geeksforgeeks.org/cholesky-decomposition-matrix-decomposition/
+6. Eigen, Cholesky Decomposition: https://eigen.tuxfamily.org/dox/classEigen_1_1LLT.html
 
 *The two documents present under literature are written by me. Please ask for permission before reusing them.*
 contact: ankursrivastava.ansr@gmail.com 
